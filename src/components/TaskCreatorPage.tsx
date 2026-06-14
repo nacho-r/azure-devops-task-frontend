@@ -39,6 +39,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const [workItemResults, setWorkItemResults] = useState<WorkItemLookup[]>([])
   const [isSearchingWorkItems, setIsSearchingWorkItems] = useState(false)
   const [isWorkItemLookupOpen, setIsWorkItemLookupOpen] = useState(false)
+  const [isParentLookupSelectionLocked, setIsParentLookupSelectionLocked] = useState(false)
   const [rows, setRows] = useState<TaskDraft[]>([createEmptyTask()])
   const [pasteText, setPasteText] = useState('')
   const [isPasteOpen, setIsPasteOpen] = useState(false)
@@ -109,7 +110,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
     const query = sanitizeText(parentId)
     const project = sanitizeText(selectedProject)
 
-    if (!project || !/^\d{2,}$/.test(query)) {
+    if (!project || isParentLookupSelectionLocked || !/^\d{2,}$/.test(query)) {
       return
     }
 
@@ -143,7 +144,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
       isMounted = false
       window.clearTimeout(timeoutId)
     }
-  }, [parentId, selectedProject])
+  }, [parentId, selectedProject, isParentLookupSelectionLocked])
 
   const summary = useMemo(() => {
     const populatedRows = rows.filter((row) => !isEmptyRow(row))
@@ -187,6 +188,14 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
 
   const removeRow = (index: number) => {
     setRows((currentRows) => (currentRows.length === 1 ? currentRows : currentRows.filter((_, rowIndex) => rowIndex !== index)))
+  }
+
+  const resetTaskList = () => {
+    setRows([createEmptyTask()])
+    setPasteText('')
+    setIsPasteOpen(false)
+    setPendingCreate(null)
+    clearMessage()
   }
 
   const importRows = () => {
@@ -318,6 +327,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   }
 
   const displayName = onExitPatMode ? 'Modo PAT local' : account?.name || account?.username || 'Usuario autenticado'
+  const hasSelectedProject = Boolean(sanitizeText(selectedProject))
   const toggleTheme = () => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
   }
@@ -326,6 +336,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
     setParentId(String(workItem.id))
     setWorkItemResults([])
     setIsWorkItemLookupOpen(false)
+    setIsParentLookupSelectionLocked(true)
   }
 
   return (
@@ -385,9 +396,17 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             autoComplete="off"
             placeholder="Seleccionar proyecto"
             onChange={(event) => {
-              setSelectedProject(event.target.value)
+              const nextProject = event.target.value
+
+              setSelectedProject(nextProject)
               setWorkItemResults([])
               setIsWorkItemLookupOpen(false)
+              setIsParentLookupSelectionLocked(false)
+
+              if (!sanitizeText(nextProject)) {
+                setParentId('')
+                setIsSearchingWorkItems(false)
+              }
             }}
             disabled={isSending}
           />
@@ -405,13 +424,19 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
               value={parentId}
               inputMode="numeric"
               autoComplete="off"
-              placeholder={isSearchingWorkItems ? 'Buscando...' : 'Ej: 4151'}
-              onFocus={() => setIsWorkItemLookupOpen(true)}
+              placeholder={hasSelectedProject ? (isSearchingWorkItems ? 'Buscando...' : 'Ej: 4151') : 'Selecciona proyecto primero'}
+              disabled={!hasSelectedProject || isSending}
+              onFocus={() => {
+                if (!isParentLookupSelectionLocked) {
+                  setIsWorkItemLookupOpen(true)
+                }
+              }}
               onChange={(event) => {
                 const nextParentId = event.target.value
 
                 setParentId(nextParentId)
                 setIsWorkItemLookupOpen(true)
+                setIsParentLookupSelectionLocked(false)
 
                 if (!/^\d{2,}$/.test(sanitizeText(nextParentId))) {
                   setWorkItemResults([])
@@ -444,6 +469,9 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
           </button>
           <button type="button" className="secondary" onClick={() => setIsPasteOpen(true)} disabled={isSending}>
             Pegar Excel
+          </button>
+          <button type="button" className="secondary" onClick={resetTaskList} disabled={isSending}>
+            Limpiar
           </button>
           <button type="button" className="primary" onClick={validateBeforeCreate} disabled={isSending}>
             Crear

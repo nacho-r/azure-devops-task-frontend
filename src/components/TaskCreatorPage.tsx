@@ -15,6 +15,7 @@ import {
 } from '../utils/taskRows'
 
 type ThemeMode = 'light' | 'dark'
+const projectStorageKey = 'taskCreatorProject'
 
 const statusLabels: Record<TaskDraft['status'], string> = {
   pending: 'pendiente',
@@ -32,7 +33,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const account = instance.getActiveAccount()
   const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme())
   const [projects, setProjects] = useState<AzureProject[]>([])
-  const [selectedProject, setSelectedProject] = useState('CRM')
+  const [selectedProject, setSelectedProject] = useState(() => getStoredProject())
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)
   const [parentId, setParentId] = useState('')
   const [workItemResults, setWorkItemResults] = useState<WorkItemLookup[]>([])
@@ -61,13 +62,6 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         }
 
         setProjects(projectList)
-        setSelectedProject((currentProject) => {
-          if (projectList.some((project) => project.name === currentProject)) {
-            return currentProject
-          }
-
-          return projectList[0]?.name || currentProject
-        })
       })
       .catch((error) => {
         if (!isMounted) {
@@ -99,6 +93,17 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
 
     return projects
   }, [projects, selectedProject])
+
+  useEffect(() => {
+    const project = sanitizeText(selectedProject)
+
+    if (project) {
+      localStorage.setItem(projectStorageKey, project)
+      return
+    }
+
+    localStorage.removeItem(projectStorageKey)
+  }, [selectedProject])
 
   useEffect(() => {
     const query = sanitizeText(parentId)
@@ -378,7 +383,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             value={selectedProject}
             list="azure-project-options"
             autoComplete="off"
-            placeholder="CRM"
+            placeholder="Seleccionar proyecto"
             onChange={(event) => {
               setSelectedProject(event.target.value)
               setWorkItemResults([])
@@ -729,4 +734,12 @@ function getStoredTheme(): ThemeMode {
   }
 
   return localStorage.getItem('taskCreatorTheme') === 'dark' ? 'dark' : 'light'
+}
+
+function getStoredProject(): string {
+  if (typeof localStorage === 'undefined') {
+    return ''
+  }
+
+  return sanitizeText(localStorage.getItem(projectStorageKey))
 }

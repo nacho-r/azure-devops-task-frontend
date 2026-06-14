@@ -229,7 +229,7 @@ p {
 
 .control-bar {
   display: grid;
-  grid-template-columns: minmax(190px, 260px) minmax(170px, 230px) minmax(300px, 1fr);
+  grid-template-columns: minmax(190px, 260px) minmax(300px, 420px) minmax(300px, 1fr);
   gap: 14px;
   align-items: end;
   padding: 14px;
@@ -243,6 +243,66 @@ p {
 .field {
   display: grid;
   gap: 4px;
+}
+
+.lookup-field {
+  position: relative;
+  min-height: 32px;
+}
+
+.lookup-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  width: min(620px, 90vw);
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.lookup-option {
+  display: flex;
+  min-height: 42px;
+  align-items: flex-start;
+  gap: 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.lookup-option:last-child {
+  border-bottom: 0;
+}
+
+.lookup-option:hover {
+  background: var(--panel-soft);
+}
+
+.lookup-option strong {
+  flex: 0 0 64px;
+  color: var(--blue-dark);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.lookup-option span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .field span,

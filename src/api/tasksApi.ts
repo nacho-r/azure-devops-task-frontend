@@ -1,4 +1,4 @@
-import type { AzureProject, BulkTasksRequest, BulkTasksResponse } from '../types/tasks'
+import type { AzureProject, BulkTasksRequest, BulkTasksResponse, WorkItemLookup } from '../types/tasks'
 import { apiFetchOptions, apiUrl } from './http'
 
 export async function submitTasks(request: BulkTasksRequest): Promise<BulkTasksResponse> {
@@ -34,6 +34,21 @@ export async function listProjects(): Promise<AzureProject[]> {
   }
 
   return Array.isArray(body.projects) ? body.projects : []
+}
+
+export async function searchWorkItems(project: string, query: string): Promise<WorkItemLookup[]> {
+  const params = new URLSearchParams({
+    project,
+    q: query,
+  })
+  const response = await fetch(apiUrl(`/api/work-items/search?${params.toString()}`), apiFetchOptions)
+  const body = (await readJsonSafely(response)) as { ok?: boolean; workItems?: WorkItemLookup[]; error?: string } | null
+
+  if (!response.ok || !body?.ok) {
+    throw new Error(body?.error || 'No se pudieron buscar work items.')
+  }
+
+  return Array.isArray(body.workItems) ? body.workItems : []
 }
 
 async function readJsonSafely(response: Response): Promise<unknown> {

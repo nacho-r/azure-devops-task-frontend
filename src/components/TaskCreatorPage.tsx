@@ -1,9 +1,9 @@
 import { useMsal } from '@azure/msal-react'
 import { useEffect, useMemo, useState } from 'react'
 import { clearPatSession } from '../api/authApi'
-import { listProjects, submitTasks } from '../api/tasksApi'
+import { listProjects, searchWorkItems, submitTasks } from '../api/tasksApi'
 import { CUSTOM_TITLE_OPTION, ITERATION_PO_TITLE, TASK_TYPE_OPTIONS, TITLE_OPTIONS } from '../constants/taskOptions'
-import type { AzureProject, BulkTaskResult, TaskDraft, TaskPayload } from '../types/tasks'
+import type { AzureProject, BulkTaskResult, TaskDraft, TaskPayload, WorkItemLookup } from '../types/tasks'
 import {
   applyTitleDefaults,
   createEmptyTask,
@@ -35,6 +35,9 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const [selectedProject, setSelectedProject] = useState('CRM')
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)
   const [parentId, setParentId] = useState('')
+  const [workItemResults, setWorkItemResults] = useState<WorkItemLookup[]>([])
+  const [isSearchingWorkItems, setIsSearchingWorkItems] = useState(false)
+  const [isWorkItemLookupOpen, setIsWorkItemLookupOpen] = useState(false)
   const [rows, setRows] = useState<TaskDraft[]>([createEmptyTask()])
   const [pasteText, setPasteText] = useState('')
   const [isPasteOpen, setIsPasteOpen] = useState(false)
@@ -96,6 +99,46 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
 
     return projects
   }, [projects, selectedProject])
+
+  useEffect(() => {
+    const query = sanitizeText(parentId)
+    const project = sanitizeText(selectedProject)
+
+    if (!project || !/^\d{2,}$/.test(query)) {
+      return
+    }
+
+    let isMounted = true
+    const timeoutId = window.setTimeout(() => {
+      setIsSearchingWorkItems(true)
+      searchWorkItems(project, query)
+        .then((items) => {
+          if (!isMounted) {
+            return
+          }
+
+          setWorkItemResults(items)
+          setIsWorkItemLookupOpen(true)
+        })
+        .catch(() => {
+          if (!isMounted) {
+            return
+          }
+
+          setWorkItemResults([])
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsSearchingWorkItems(false)
+          }
+        })
+    }, 300)
+
+    return () => {
+      isMounted = false
+      window.clearTimeout(timeoutId)
+    }
+  }, [parentId, selectedProject])
 
   const summary = useMemo(() => {
     const populatedRows = rows.filter((row) => !isEmptyRow(row))
@@ -274,6 +317,12 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
   }
 
+  const selectParentWorkItem = (workItem: WorkItemLookup) => {
+    setParentId(String(workItem.id))
+    setWorkItemResults([])
+    setIsWorkItemLookupOpen(false)
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -330,7 +379,11 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             list="azure-project-options"
             autoComplete="off"
             placeholder="CRM"
-            onChange={(event) => setSelectedProject(event.target.value)}
+            onChange={(event) => {
+              setSelectedProject(event.target.value)
+              setWorkItemResults([])
+              setIsWorkItemLookupOpen(false)
+            }}
             disabled={isSending}
           />
           <datalist id="azure-project-options">
@@ -342,13 +395,42 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
 
         <label className="field parent-field">
           <span>ID work item padre</span>
-          <input
-            value={parentId}
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="410960"
-            onChange={(event) => setParentId(event.target.value)}
-          />
+          <div className="lookup-field">
+            <input
+              value={parentId}
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder={isSearchingWorkItems ? 'Buscando...' : 'Ej: 4151'}
+              onFocus={() => setIsWorkItemLookupOpen(true)}
+              onChange={(event) => {
+                const nextParentId = event.target.value
+
+                setParentId(nextParentId)
+                setIsWorkItemLookupOpen(true)
+
+                if (!/^\d{2,}$/.test(sanitizeText(nextParentId))) {
+                  setWorkItemResults([])
+                  setIsSearchingWorkItems(false)
+                }
+              }}
+            />
+            {isWorkItemLookupOpen && workItemResults.length > 0 ? (
+              <div className="lookup-results">
+                {workItemResults.map((workItem) => (
+                  <button
+                    type="button"
+                    className="lookup-option"
+                    key={workItem.id}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => selectParentWorkItem(workItem)}
+                  >
+                    <strong>{workItem.id}</strong>
+                    <span>{workItem.title || 'Sin titulo'}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
         </label>
 
         <div className="actions">

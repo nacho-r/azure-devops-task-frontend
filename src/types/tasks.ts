@@ -35,6 +35,14 @@ export type AzureProject = {
   visibility?: string
 }
 
+export type WorkItemLookup = {
+  id: number
+  title: string
+  type?: string
+  state?: string
+  url?: string
+}
+
 export type BulkTaskResult = {
   index: number
   status: 'validated' | 'created' | 'failed'

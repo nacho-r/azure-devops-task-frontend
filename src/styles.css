@@ -1,6 +1,7 @@
 :root {
   --bg: #f9f9f5;
   --panel: #ffffff;
+  --panel-soft: #f9fafb;
   --text: #1e1e1e;
   --muted: #62625d;
   --border: #edede8;
@@ -11,7 +12,32 @@
   --red-bg: #fff1f0;
   --amber: #b45309;
   --gray-bg: #f1f1ec;
+  --input-bg: #ffffff;
+  --focus-ring: rgba(19, 192, 69, 0.16);
+  --overlay: rgba(30, 30, 30, 0.38);
   --shadow: 0 14px 40px rgba(30, 30, 30, 0.08);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #111612;
+  --panel: #181f1b;
+  --panel-soft: #1e2722;
+  --text: #f0f4ef;
+  --muted: #aab4aa;
+  --border: #2b352f;
+  --blue: #13c045;
+  --blue-dark: #4ade80;
+  --green: #7ddc91;
+  --red: #f87171;
+  --red-bg: #331b1b;
+  --amber: #fbbf24;
+  --gray-bg: #253028;
+  --input-bg: #101611;
+  --focus-ring: rgba(74, 222, 128, 0.2);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.24);
+  color-scheme: dark;
 }
 
 * {
@@ -55,7 +81,7 @@ textarea {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 5px;
-  background: #fff;
+  background: var(--input-bg);
   color: var(--text);
   outline: none;
   font-size: 0.88rem;
@@ -81,11 +107,11 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(19, 192, 69, 0.16);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 input[readonly] {
-  background: #f9f9f5;
+  background: var(--panel-soft);
   color: var(--muted);
   cursor: not-allowed;
 }
@@ -100,7 +126,7 @@ input[readonly] {
 .login-panel {
   display: grid;
   width: min(520px, 100%);
-  gap: 22px;
+  gap: 24px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel);
@@ -142,15 +168,15 @@ p {
 .app-shell {
   width: min(1320px, calc(100vw - 24px));
   margin: 0 auto;
-  padding: 14px 0 28px;
+  padding: 20px 0 36px;
 }
 
 .topbar {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(260px, 420px);
-  gap: 14px;
+  gap: 18px;
   align-items: end;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .user-panel {
@@ -166,8 +192,8 @@ p {
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .summary-grid div {
@@ -204,10 +230,10 @@ p {
 .control-bar {
   display: grid;
   grid-template-columns: minmax(190px, 260px) minmax(170px, 230px) minmax(300px, 1fr);
-  gap: 10px;
+  gap: 14px;
   align-items: end;
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
 }
 
 .project-field input {
@@ -243,7 +269,7 @@ p {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
 }
 
 .primary {
@@ -257,7 +283,7 @@ p {
 
 .secondary {
   border-color: var(--border);
-  background: #fff;
+  background: var(--panel);
   color: var(--text);
 }
 
@@ -283,26 +309,26 @@ p {
 
 .pat-login {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   border-top: 1px solid var(--border);
-  padding-top: 18px;
+  padding-top: 20px;
 }
 
 .pat-bar {
   display: grid;
   grid-template-columns: minmax(240px, 420px) minmax(220px, 1fr);
-  gap: 10px;
+  gap: 14px;
   align-items: end;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--panel);
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
 }
 
 .paste-panel {
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
 }
 
 .paste-actions {
@@ -329,7 +355,7 @@ td {
 
 th {
   height: 32px;
-  background: #f9fafb;
+  background: var(--panel-soft);
   color: var(--muted);
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -446,12 +472,12 @@ tbody tr:last-child td {
   width: 32px;
   padding: 0;
   border-color: var(--border);
-  background: #fff;
+  background: var(--panel);
 }
 
 .message {
   min-height: 24px;
-  margin-top: 8px;
+  margin-top: 12px;
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 700;
@@ -475,7 +501,7 @@ tbody tr:last-child td {
   z-index: 20;
   display: grid;
   place-items: center;
-  background: rgba(30, 30, 30, 0.38);
+  background: var(--overlay);
   padding: 20px;
 }
 

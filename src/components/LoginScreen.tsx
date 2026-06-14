@@ -60,7 +60,7 @@ export function LoginScreen() {
           <p className="eyebrow">Azure DevOps Tasks</p>
           <h1>Ingresa con Microsoft</h1>
           <p className="muted">
-            La creacion de tasks queda disponible solo despues de autenticar con Microsoft Entra ID.
+            La creacion de tareas queda disponible solo despues de autenticar con Microsoft Entra ID.
           </p>
         </div>
 
@@ -113,12 +113,12 @@ function PatHelpModal({ onClose }: { onClose: () => void }) {
           <li>Ingresar a Azure desde tu proyecto.</li>
           <li>Presionar configuracion arriba a la derecha.</li>
           <li>Presionar Personal access tokens.</li>
-          <li>Presionar New Token.</li>
-          <li>Ingresar name: PAT-TASK.</li>
-          <li>Presionar Custom defined.</li>
-          <li>Marcar Work Items con Read &amp; Write.</li>
-          <li>Dejar todas las demas opciones en Read.</li>
-          <li>Presionar Create.</li>
+          <li>Presionar Nuevo token.</li>
+          <li>Ingresar nombre: PAT-TASK.</li>
+          <li>Presionar Definido personalizado.</li>
+          <li>Marcar Work Items con lectura y escritura.</li>
+          <li>Dejar todas las demas opciones en lectura.</li>
+          <li>Presionar Crear.</li>
         </ol>
         <div className="modal-actions">
           <button type="button" className="primary" onClick={onClose}>

@@ -14,6 +14,8 @@ import {
   validateTaskRow,
 } from '../utils/taskRows'
 
+type ThemeMode = 'light' | 'dark'
+
 const statusLabels: Record<TaskDraft['status'], string> = {
   pending: 'pendiente',
   validated: 'validada',
@@ -28,6 +30,7 @@ type TaskCreatorPageProps = {
 export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const { instance } = useMsal()
   const account = instance.getActiveAccount()
+  const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme())
   const [projects, setProjects] = useState<AzureProject[]>([])
   const [selectedProject, setSelectedProject] = useState('CRM')
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)
@@ -39,6 +42,11 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const [message, setMessage] = useState('')
   const [messageTone, setMessageTone] = useState<'ok' | 'error' | 'warning' | ''>('')
   const [pendingCreate, setPendingCreate] = useState<Extract<ValidationResult, { ok: true }> | null>(null)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('taskCreatorTheme', theme)
+  }, [theme])
 
   useEffect(() => {
     let isMounted = true
@@ -107,14 +115,20 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
           return row
         }
 
-        return applyTitleDefaults({
+        const nextRow = {
           ...row,
           ...patch,
-          status: 'pending',
+          status: 'pending' as const,
           error: undefined,
           id: undefined,
           url: undefined,
-        })
+        }
+
+        if (Object.prototype.hasOwnProperty.call(patch, 'title')) {
+          return applyTitleDefaults(nextRow)
+        }
+
+        return nextRow
       }),
     )
   }
@@ -235,7 +249,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         return {
           ...row,
           status: 'error',
-          error: result?.error || 'No se pudo crear la task.',
+          error: result?.error || 'No se pudo crear la tarea.',
         }
       }),
     )
@@ -256,16 +270,22 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   }
 
   const displayName = onExitPatMode ? 'Modo PAT local' : account?.name || account?.username || 'Usuario autenticado'
+  const toggleTheme = () => {
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
+  }
 
   return (
     <main className="app-shell">
       <header className="topbar">
         <div>
           <h1>Azure DevOps Tasks</h1>
-          <p>Creacion masiva de tasks hijas</p>
+          <p>Creacion masiva de tareas hijas</p>
         </div>
         <div className="user-panel">
           <span>{displayName}</span>
+          <button type="button" className="secondary" onClick={toggleTheme} disabled={isSending}>
+            {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          </button>
           {onExitPatMode ? (
             <button type="button" className="secondary" onClick={exitPatMode} disabled={isSending}>
               Salir modo PAT
@@ -321,7 +341,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         </label>
 
         <label className="field parent-field">
-          <span>Parent Work Item ID</span>
+          <span>ID work item padre</span>
           <input
             value={parentId}
             inputMode="numeric"
@@ -365,11 +385,11 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         <table>
           <thead>
             <tr>
-              <th className="title-col">Title</th>
-              <th className="description-col">Description</th>
-              <th className="type-col">Task Type</th>
-              <th className="number-col">Remaining Work</th>
-              <th className="number-col">Original Estimate HH</th>
+              <th className="title-col">Titulo</th>
+              <th className="description-col">Descripcion</th>
+              <th className="type-col">Tipo de tarea</th>
+              <th className="number-col">Horas restantes</th>
+              <th className="number-col">Estimacion original</th>
               <th className="status-col">Estado</th>
               <th className="action-col">Accion</th>
             </tr>
@@ -394,7 +414,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
                     {row.isCustomTitle ? (
                       <input
                         value={row.title}
-                        placeholder="Ingresar title"
+                        placeholder="Ingresar titulo"
                         onChange={(event) => updateRow(index, { title: event.target.value, isCustomTitle: true })}
                       />
                     ) : null}
@@ -492,9 +512,9 @@ function ConfirmCreateModal({
       <section className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-create-title">
         <div>
           <p className="eyebrow">Confirmacion</p>
-          <h2 id="confirm-create-title">Crear tasks reales</h2>
+          <h2 id="confirm-create-title">Crear tareas reales</h2>
           <p className="muted">
-            Se crearan {taskCount} task(s) hijas del work item {parentId} en el proyecto {project}.
+            Se crearan {taskCount} tarea(s) hijas del work item {parentId} en el proyecto {project}.
           </p>
         </div>
         <div className="modal-actions">
@@ -573,7 +593,7 @@ function validateForm(rows: TaskDraft[], parentId: string, project: string): Val
   if (!sanitizedParentId) {
     return {
       ok: false,
-      message: 'Parent Work Item ID es requerido.',
+      message: 'El ID del work item padre es requerido.',
       rows: nextRows,
     }
   }
@@ -598,7 +618,7 @@ function validateForm(rows: TaskDraft[], parentId: string, project: string): Val
   if (tasks.length === 0 && nextRows.every((row) => row.status !== 'error')) {
     return {
       ok: false,
-      message: 'Agrega al menos una task.',
+      message: 'Agrega al menos una tarea.',
       rows: nextRows,
     }
   }
@@ -619,4 +639,12 @@ function validateForm(rows: TaskDraft[], parentId: string, project: string): Val
     sourceIndexes,
     rows: nextRows,
   }
+}
+
+function getStoredTheme(): ThemeMode {
+  if (typeof localStorage === 'undefined') {
+    return 'light'
+  }
+
+  return localStorage.getItem('taskCreatorTheme') === 'dark' ? 'dark' : 'light'
 }

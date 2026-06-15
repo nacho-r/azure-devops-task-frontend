@@ -1,9 +1,16 @@
 import { useMsal } from '@azure/msal-react'
 import { useEffect, useMemo, useState } from 'react'
 import { clearPatSession } from '../api/authApi'
-import { listProjects, searchWorkItems, submitTasks } from '../api/tasksApi'
+import { listClassificationNodes, listProjects, searchWorkItems, submitTasks } from '../api/tasksApi'
 import { CUSTOM_TITLE_OPTION, ITERATION_PO_TITLE, TASK_TYPE_OPTIONS, TITLE_OPTIONS } from '../constants/taskOptions'
-import type { AzureProject, BulkTaskResult, TaskDraft, TaskPayload, WorkItemLookup } from '../types/tasks'
+import type {
+  AzureProject,
+  BulkTaskResult,
+  ClassificationNode,
+  TaskDraft,
+  TaskPayload,
+  WorkItemLookup,
+} from '../types/tasks'
 import {
   applyTitleDefaults,
   createEmptyTask,
@@ -35,6 +42,11 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const [projects, setProjects] = useState<AzureProject[]>([])
   const [selectedProject, setSelectedProject] = useState(() => getStoredProject())
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)
+  const [areaPath, setAreaPath] = useState('')
+  const [iterationPath, setIterationPath] = useState('')
+  const [assignedTo, setAssignedTo] = useState('')
+  const [areaOptions, setAreaOptions] = useState<ClassificationNode[]>([])
+  const [iterationOptions, setIterationOptions] = useState<ClassificationNode[]>([])
   const [parentId, setParentId] = useState('')
   const [workItemResults, setWorkItemResults] = useState<WorkItemLookup[]>([])
   const [isSearchingWorkItems, setIsSearchingWorkItems] = useState(false)
@@ -105,6 +117,62 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
 
     localStorage.removeItem(projectStorageKey)
   }, [selectedProject])
+
+  useEffect(() => {
+    const project = sanitizeText(selectedProject)
+
+    if (!project) {
+      return
+    }
+
+    let isMounted = true
+    const timeoutId = window.setTimeout(() => {
+      listClassificationNodes(project, 'areas', areaPath)
+        .then((nodes) => {
+          if (isMounted) {
+            setAreaOptions(nodes)
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setAreaOptions([])
+          }
+        })
+    }, 300)
+
+    return () => {
+      isMounted = false
+      window.clearTimeout(timeoutId)
+    }
+  }, [selectedProject, areaPath])
+
+  useEffect(() => {
+    const project = sanitizeText(selectedProject)
+
+    if (!project) {
+      return
+    }
+
+    let isMounted = true
+    const timeoutId = window.setTimeout(() => {
+      listClassificationNodes(project, 'iterations', iterationPath)
+        .then((nodes) => {
+          if (isMounted) {
+            setIterationOptions(nodes)
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setIterationOptions([])
+          }
+        })
+    }, 300)
+
+    return () => {
+      isMounted = false
+      window.clearTimeout(timeoutId)
+    }
+  }, [selectedProject, iterationPath])
 
   useEffect(() => {
     const query = sanitizeText(parentId)
@@ -256,6 +324,9 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
     try {
       const response = await submitTasks({
         project: validation.project,
+        areaPath: sanitizeText(areaPath) || undefined,
+        iterationPath: sanitizeText(iterationPath) || undefined,
+        assignedTo: sanitizeText(assignedTo) || undefined,
         parentId: validation.parentId,
         dryRun: false,
         tasks: validation.tasks,
@@ -402,6 +473,10 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
               setWorkItemResults([])
               setIsWorkItemLookupOpen(false)
               setIsParentLookupSelectionLocked(false)
+              setAreaPath('')
+              setIterationPath('')
+              setAreaOptions([])
+              setIterationOptions([])
 
               if (!sanitizeText(nextProject)) {
                 setParentId('')
@@ -415,6 +490,51 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
               <option value={project.name} key={project.id || project.name} />
             ))}
           </datalist>
+        </label>
+
+        <label className="field area-field">
+          <span>Area</span>
+          <input
+            value={areaPath}
+            list="area-path-options"
+            autoComplete="off"
+            placeholder={hasSelectedProject ? 'Ej: CRM\\Playbook-CO-SF' : 'Selecciona proyecto primero'}
+            disabled={!hasSelectedProject || isSending}
+            onChange={(event) => setAreaPath(event.target.value)}
+          />
+          <datalist id="area-path-options">
+            {areaOptions.map((node) => (
+              <option value={node.path} key={node.id || node.path} />
+            ))}
+          </datalist>
+        </label>
+
+        <label className="field iteration-field">
+          <span>Iteracion</span>
+          <input
+            value={iterationPath}
+            list="iteration-path-options"
+            autoComplete="off"
+            placeholder={hasSelectedProject ? 'Ej: CRM\\ContinuidadCSF\\Sprint 11' : 'Selecciona proyecto primero'}
+            disabled={!hasSelectedProject || isSending}
+            onChange={(event) => setIterationPath(event.target.value)}
+          />
+          <datalist id="iteration-path-options">
+            {iterationOptions.map((node) => (
+              <option value={node.path} key={node.id || node.path} />
+            ))}
+          </datalist>
+        </label>
+
+        <label className="field assigned-field">
+          <span>Asignado a</span>
+          <input
+            value={assignedTo}
+            autoComplete="off"
+            placeholder="correo@empresa.com"
+            disabled={isSending}
+            onChange={(event) => setAssignedTo(event.target.value)}
+          />
         </label>
 
         <label className="field parent-field">

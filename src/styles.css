@@ -229,15 +229,27 @@ p {
 
 .control-bar {
   display: grid;
-  grid-template-columns: minmax(190px, 260px) minmax(300px, 420px) minmax(300px, 1fr);
+  grid-template-columns:
+    minmax(170px, 220px)
+    minmax(220px, 1fr)
+    minmax(240px, 1fr)
+    minmax(210px, 300px)
+    minmax(230px, 340px);
   gap: 14px;
   align-items: end;
   padding: 14px;
   margin-bottom: 16px;
 }
 
-.project-field input {
+.project-field input,
+.area-field input,
+.iteration-field input,
+.assigned-field input {
   min-width: 0;
+}
+
+.actions {
+  grid-column: 1 / -1;
 }
 
 .field {

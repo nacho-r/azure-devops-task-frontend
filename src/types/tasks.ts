@@ -23,6 +23,9 @@ export type TaskPayload = {
 
 export type BulkTasksRequest = {
   project: string
+  areaPath?: string
+  iterationPath?: string
+  assignedTo?: string
   parentId: string
   dryRun: boolean
   tasks: TaskPayload[]
@@ -41,6 +44,16 @@ export type WorkItemLookup = {
   type?: string
   state?: string
   url?: string
+}
+
+export type ClassificationNode = {
+  id: number
+  name: string
+  path: string
+  structureType?: string
+  hasChildren?: boolean
+  startDate?: string
+  finishDate?: string
 }
 
 export type BulkTaskResult = {

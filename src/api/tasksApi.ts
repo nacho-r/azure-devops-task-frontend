@@ -1,4 +1,10 @@
-import type { AzureProject, BulkTasksRequest, BulkTasksResponse, WorkItemLookup } from '../types/tasks'
+import type {
+  AzureProject,
+  BulkTasksRequest,
+  BulkTasksResponse,
+  ClassificationNode,
+  WorkItemLookup,
+} from '../types/tasks'
 import { apiFetchOptions, apiUrl } from './http'
 
 export async function submitTasks(request: BulkTasksRequest): Promise<BulkTasksResponse> {
@@ -49,6 +55,30 @@ export async function searchWorkItems(project: string, query: string): Promise<W
   }
 
   return Array.isArray(body.workItems) ? body.workItems : []
+}
+
+export async function listClassificationNodes(
+  project: string,
+  type: 'areas' | 'iterations',
+  query = '',
+): Promise<ClassificationNode[]> {
+  const params = new URLSearchParams({
+    project,
+    type,
+  })
+
+  if (query.trim()) {
+    params.set('q', query.trim())
+  }
+
+  const response = await fetch(apiUrl(`/api/classification-nodes?${params.toString()}`), apiFetchOptions)
+  const body = (await readJsonSafely(response)) as { ok?: boolean; nodes?: ClassificationNode[]; error?: string } | null
+
+  if (!response.ok || !body?.ok) {
+    throw new Error(body?.error || 'No se pudieron cargar las rutas del proyecto.')
+  }
+
+  return Array.isArray(body.nodes) ? body.nodes : []
 }
 
 async function readJsonSafely(response: Response): Promise<unknown> {

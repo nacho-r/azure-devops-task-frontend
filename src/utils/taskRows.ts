@@ -76,19 +76,19 @@ export function validateTaskRow(row: TaskDraft): string[] {
   const errors: string[] = []
 
   if (!sanitizeText(row.title)) {
-    errors.push('Titulo es requerido.')
+    errors.push('El título es requerido.')
   }
 
   if (!sanitizeText(row.description)) {
-    errors.push('Descripcion es requerida.')
+    errors.push('La descripción es requerida.')
   }
 
   if (!isOptionalNumber(row.remainingWork)) {
-    errors.push('Horas restantes debe ser numerico.')
+    errors.push('Las horas restantes deben ser numéricas.')
   }
 
   if (!isOptionalNumber(row.originalEstimateHH)) {
-    errors.push('Estimacion original debe ser numerica.')
+    errors.push('La estimación original debe ser numérica.')
   }
 
   return errors

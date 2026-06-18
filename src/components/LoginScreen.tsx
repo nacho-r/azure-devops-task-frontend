@@ -60,18 +60,18 @@ export function LoginScreen() {
           <p className="eyebrow">Azure DevOps Tasks</p>
           <h1>Ingresa con Microsoft</h1>
           <p className="muted">
-            La creacion de tareas queda disponible solo despues de autenticar con Microsoft Entra ID.
+            La creación de tareas queda disponible solo después de autenticar con Microsoft Entra ID.
           </p>
         </div>
 
         {!isAuthConfigured ? (
           <div className="alert error">
-            Proximamente
+            Próximamente
           </div>
         ) : null}
 
         <button className="primary large" type="button" disabled={!isAuthConfigured || isBusy} onClick={handleLogin}>
-          {isBusy ? 'Redirigiendo...' : 'Iniciar sesion'}
+          {isBusy ? 'Redirigiendo...' : 'Iniciar sesión'}
         </button>
 
         <div className="pat-login">
@@ -90,7 +90,7 @@ export function LoginScreen() {
             Entrar con PAT local
           </button>
           <button className="secondary large" type="button" onClick={() => setIsPatHelpOpen(true)}>
-            Como obtener PAT
+            Cómo obtener PAT
           </button>
           {error ? <div className="alert error">{error}</div> : null}
         </div>
@@ -107,17 +107,17 @@ function PatHelpModal({ onClose }: { onClose: () => void }) {
       <section className="confirm-modal pat-help-modal" role="dialog" aria-modal="true" aria-labelledby="pat-help-title">
         <div>
           <p className="eyebrow">PAT Azure DevOps</p>
-          <h2 id="pat-help-title">Como obtener PAT</h2>
+          <h2 id="pat-help-title">Cómo obtener PAT</h2>
         </div>
         <ol className="help-list">
           <li>Ingresar a Azure desde tu proyecto.</li>
-          <li>Presionar configuracion arriba a la derecha.</li>
+          <li>Presionar configuración arriba a la derecha.</li>
           <li>Presionar Personal access tokens.</li>
           <li>Presionar Nuevo token.</li>
           <li>Ingresar nombre: PAT-TASK.</li>
           <li>Presionar Definido personalizado.</li>
           <li>Marcar Work Items con lectura y escritura.</li>
-          <li>Dejar todas las demas opciones en lectura.</li>
+          <li>Dejar todas las demás opciones en lectura.</li>
           <li>Presionar Crear.</li>
         </ol>
         <div className="modal-actions">

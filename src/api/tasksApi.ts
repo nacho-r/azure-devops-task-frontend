@@ -20,11 +20,11 @@ export async function submitTasks(request: BulkTasksRequest): Promise<BulkTasksR
   const body = (await readJsonSafely(response)) as BulkTasksResponse | null
 
   if (!body) {
-    throw new Error('El backend no devolvio una respuesta valida.')
+    throw new Error('El backend no devolvió una respuesta válida.')
   }
 
   if (!response.ok && !body.tasks && !body.results) {
-    const message = body.errors?.[0] || body.error || 'El backend rechazo la solicitud.'
+    const message = body.errors?.[0] || body.error || 'El backend rechazó la solicitud.'
     throw new Error(message)
   }
 

@@ -437,7 +437,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
       <header className="topbar">
         <div>
           <h1>Azure DevOps Tasks</h1>
-          <p>Creacion masiva de tareas hijas</p>
+          <p>Creación masiva de tareas hijas</p>
         </div>
         <div className="user-panel">
           <span>{displayName}</span>
@@ -450,7 +450,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             </button>
           ) : (
             <button type="button" className="secondary" onClick={() => instance.logoutRedirect()} disabled={isSending}>
-              Cerrar sesion
+              Cerrar sesión
             </button>
           )}
         </div>
@@ -469,7 +469,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
               aria-readonly="true"
             />
           </label>
-          <p className="muted">PAT bloqueado para esta sesion. Para cambiarlo, usa Salir modo PAT.</p>
+          <p className="muted">PAT bloqueado para esta sesión. Para cambiarlo, usa Salir modo PAT.</p>
         </section>
       ) : null}
 
@@ -516,14 +516,14 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         </label>
 
         <label className="field area-field">
-          <span>Area</span>
+          <span>Área</span>
           <input
             value={areaPath}
             list="area-path-options"
             autoComplete="off"
             placeholder={
               inheritParentClassification
-                ? 'Se usara el area del work item padre'
+                ? 'Se usará el área del work item padre'
                 : hasSelectedProject
                   ? 'Ej: CRM\\Playbook-CO-SF'
                   : 'Selecciona proyecto primero'
@@ -539,14 +539,14 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         </label>
 
         <label className="field iteration-field">
-          <span>Iteracion</span>
+          <span>Iteración</span>
           <input
             value={iterationPath}
             list="iteration-path-options"
             autoComplete="off"
             placeholder={
               inheritParentClassification
-                ? 'Se usara la iteracion del work item padre'
+                ? 'Se usará la iteración del work item padre'
                 : hasSelectedProject
                   ? 'Ej: CRM\\ContinuidadCSF\\Sprint 11'
                   : 'Selecciona proyecto primero'
@@ -611,7 +611,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
                     onClick={() => selectParentWorkItem(workItem)}
                   >
                     <strong>{workItem.id}</strong>
-                    <span>{workItem.title || 'Sin titulo'}</span>
+                    <span>{workItem.title || 'Sin título'}</span>
                   </button>
                 ))}
               </div>
@@ -637,7 +637,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
               }
             }}
           />
-          <span>Usar area e iteracion del work item padre</span>
+          <span>Usar área e iteración del work item padre</span>
         </label>
 
         <div className="actions">
@@ -680,13 +680,13 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
         <table>
           <thead>
             <tr>
-              <th className="title-col">Titulo</th>
-              <th className="description-col">Descripcion</th>
+              <th className="title-col">Título</th>
+              <th className="description-col">Descripción</th>
               <th className="type-col">Tipo de tarea</th>
               <th className="number-col">Horas restantes</th>
-              <th className="number-col">Estimacion original</th>
+              <th className="number-col">Estimación original</th>
               <th className="status-col">Estado</th>
-              <th className="action-col">Accion</th>
+              <th className="action-col">Acción</th>
             </tr>
           </thead>
           <tbody>
@@ -709,7 +709,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
                     {row.isCustomTitle ? (
                       <input
                         value={row.title}
-                        placeholder="Ingresar titulo"
+                        placeholder="Ingresar título"
                         onChange={(event) => updateRow(index, { title: event.target.value, isCustomTitle: true })}
                       />
                     ) : null}
@@ -743,7 +743,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
                   <span className={`status-pill status-${row.status}`}>{statusLabels[row.status]}</span>
                   {row.id || row.url ? (
                     <a className="created-link" href={row.url || '#'} target="_blank" rel="noreferrer">
-                      {row.id ? `#${row.id}` : 'Abrir task'}
+                      {row.id ? `#${row.id}` : 'Abrir tarea'}
                     </a>
                   ) : null}
                   {row.error ? <div className="row-error">{row.error}</div> : null}
@@ -770,7 +770,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
       </div>
 
       <p className="footnote">
-        Al seleccionar {ITERATION_PO_TITLE}, las horas quedan en 0.5 si estaban vacias.
+        Al seleccionar {ITERATION_PO_TITLE}, las horas quedan en 0.5 si estaban vacías.
       </p>
 
       {pendingCreate ? (
@@ -806,10 +806,10 @@ function ConfirmCreateModal({
     <div className="modal-backdrop" role="presentation">
       <section className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-create-title">
         <div>
-          <p className="eyebrow">Confirmacion</p>
+          <p className="eyebrow">Confirmación</p>
           <h2 id="confirm-create-title">Crear tareas reales</h2>
           <p className="muted">
-            Se crearan {taskCount} tarea(s) hijas del work item {parentId} en el proyecto {project}.
+            Se crearán {taskCount} tarea(s) hijas del work item {parentId} en el proyecto {project}.
           </p>
         </div>
         <div className="modal-actions">
@@ -880,7 +880,7 @@ function validateForm(rows: TaskDraft[], parentId: string, project: string): Val
   if (!sanitizedProject) {
     return {
       ok: false,
-      message: 'Proyecto es requerido.',
+      message: 'El proyecto es requerido.',
       rows: nextRows,
     }
   }

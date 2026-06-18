@@ -110,7 +110,8 @@ textarea:focus {
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-input[readonly] {
+input[readonly],
+input:disabled {
   background: var(--panel-soft);
   color: var(--muted);
   cursor: not-allowed;
@@ -336,6 +337,10 @@ p {
   height: 18px;
 }
 
+.inherit-field {
+  align-self: end;
+}
+
 .actions,
 .paste-actions {
   display: flex;
@@ -357,6 +362,20 @@ p {
   border-color: var(--border);
   background: var(--panel);
   color: var(--text);
+}
+
+.action-link {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0 10px;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .danger {
@@ -628,6 +647,7 @@ tbody tr:last-child td {
   }
 
   .actions button,
+  .actions .action-link,
   .paste-actions button {
     flex: 1 1 140px;
   }

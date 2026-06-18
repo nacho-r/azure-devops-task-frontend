@@ -25,6 +25,7 @@ export type BulkTasksRequest = {
   project: string
   areaPath?: string
   iterationPath?: string
+  inheritParentClassification?: boolean
   assignedTo?: string
   parentId: string
   dryRun: boolean

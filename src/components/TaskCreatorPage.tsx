@@ -44,6 +44,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)
   const [areaPath, setAreaPath] = useState('')
   const [iterationPath, setIterationPath] = useState('')
+  const [inheritParentClassification, setInheritParentClassification] = useState(false)
   const [assignedTo, setAssignedTo] = useState('')
   const [areaOptions, setAreaOptions] = useState<ClassificationNode[]>([])
   const [iterationOptions, setIterationOptions] = useState<ClassificationNode[]>([])
@@ -121,7 +122,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   useEffect(() => {
     const project = sanitizeText(selectedProject)
 
-    if (!project) {
+    if (!project || inheritParentClassification) {
       return
     }
 
@@ -144,12 +145,12 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
       isMounted = false
       window.clearTimeout(timeoutId)
     }
-  }, [selectedProject, areaPath])
+  }, [selectedProject, areaPath, inheritParentClassification])
 
   useEffect(() => {
     const project = sanitizeText(selectedProject)
 
-    if (!project) {
+    if (!project || inheritParentClassification) {
       return
     }
 
@@ -172,7 +173,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
       isMounted = false
       window.clearTimeout(timeoutId)
     }
-  }, [selectedProject, iterationPath])
+  }, [selectedProject, iterationPath, inheritParentClassification])
 
   useEffect(() => {
     const query = sanitizeText(parentId)
@@ -324,8 +325,9 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
     try {
       const response = await submitTasks({
         project: validation.project,
-        areaPath: sanitizeText(areaPath) || undefined,
-        iterationPath: sanitizeText(iterationPath) || undefined,
+        areaPath: inheritParentClassification ? undefined : sanitizeText(areaPath) || undefined,
+        iterationPath: inheritParentClassification ? undefined : sanitizeText(iterationPath) || undefined,
+        inheritParentClassification,
         assignedTo: sanitizeText(assignedTo) || undefined,
         parentId: validation.parentId,
         dryRun: false,
@@ -399,6 +401,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
 
   const displayName = onExitPatMode ? 'Modo PAT local' : account?.name || account?.username || 'Usuario autenticado'
   const hasSelectedProject = Boolean(sanitizeText(selectedProject))
+  const areClassificationInputsDisabled = inheritParentClassification || !hasSelectedProject || isSending
   const toggleTheme = () => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
   }
@@ -498,8 +501,14 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             value={areaPath}
             list="area-path-options"
             autoComplete="off"
-            placeholder={hasSelectedProject ? 'Ej: CRM\\Playbook-CO-SF' : 'Selecciona proyecto primero'}
-            disabled={!hasSelectedProject || isSending}
+            placeholder={
+              inheritParentClassification
+                ? 'Se usara el area del work item padre'
+                : hasSelectedProject
+                  ? 'Ej: CRM\\Playbook-CO-SF'
+                  : 'Selecciona proyecto primero'
+            }
+            disabled={areClassificationInputsDisabled}
             onChange={(event) => setAreaPath(event.target.value)}
           />
           <datalist id="area-path-options">
@@ -515,8 +524,14 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             value={iterationPath}
             list="iteration-path-options"
             autoComplete="off"
-            placeholder={hasSelectedProject ? 'Ej: CRM\\ContinuidadCSF\\Sprint 11' : 'Selecciona proyecto primero'}
-            disabled={!hasSelectedProject || isSending}
+            placeholder={
+              inheritParentClassification
+                ? 'Se usara la iteracion del work item padre'
+                : hasSelectedProject
+                  ? 'Ej: CRM\\ContinuidadCSF\\Sprint 11'
+                  : 'Selecciona proyecto primero'
+            }
+            disabled={areClassificationInputsDisabled}
             onChange={(event) => setIterationPath(event.target.value)}
           />
           <datalist id="iteration-path-options">
@@ -583,6 +598,20 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
           </div>
         </label>
 
+        <label className="toggle inherit-field">
+          <input
+            type="checkbox"
+            checked={inheritParentClassification}
+            disabled={isSending}
+            onChange={(event) => {
+              setInheritParentClassification(event.target.checked)
+              setAreaOptions([])
+              setIterationOptions([])
+            }}
+          />
+          <span>Usar area e iteracion del work item padre</span>
+        </label>
+
         <div className="actions">
           <button type="button" className="secondary" onClick={addRow} disabled={isSending}>
             + Fila
@@ -590,6 +619,9 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
           <button type="button" className="secondary" onClick={() => setIsPasteOpen(true)} disabled={isSending}>
             Pegar Excel
           </button>
+          <a className="secondary action-link" href="/MatrizADT.xlsx" download="MatrizADT.xlsx">
+            Descargar matriz ejemplo
+          </a>
           <button type="button" className="secondary" onClick={resetTaskList} disabled={isSending}>
             Limpiar
           </button>

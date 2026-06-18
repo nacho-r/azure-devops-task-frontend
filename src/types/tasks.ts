@@ -44,6 +44,8 @@ export type WorkItemLookup = {
   title: string
   type?: string
   state?: string
+  areaPath?: string
+  iterationPath?: string
   url?: string
 }
 

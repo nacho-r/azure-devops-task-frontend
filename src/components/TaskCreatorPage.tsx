@@ -49,6 +49,10 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   const [areaOptions, setAreaOptions] = useState<ClassificationNode[]>([])
   const [iterationOptions, setIterationOptions] = useState<ClassificationNode[]>([])
   const [parentId, setParentId] = useState('')
+  const [selectedParentClassification, setSelectedParentClassification] = useState<{
+    areaPath?: string
+    iterationPath?: string
+  } | null>(null)
   const [workItemResults, setWorkItemResults] = useState<WorkItemLookup[]>([])
   const [isSearchingWorkItems, setIsSearchingWorkItems] = useState(false)
   const [isWorkItemLookupOpen, setIsWorkItemLookupOpen] = useState(false)
@@ -325,8 +329,8 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
     try {
       const response = await submitTasks({
         project: validation.project,
-        areaPath: inheritParentClassification ? undefined : sanitizeText(areaPath) || undefined,
-        iterationPath: inheritParentClassification ? undefined : sanitizeText(iterationPath) || undefined,
+        areaPath: sanitizeText(areaPath) || undefined,
+        iterationPath: sanitizeText(iterationPath) || undefined,
         inheritParentClassification,
         assignedTo: sanitizeText(assignedTo) || undefined,
         parentId: validation.parentId,
@@ -407,10 +411,25 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
   }
 
   const selectParentWorkItem = (workItem: WorkItemLookup) => {
+    const nextAreaPath = sanitizeText(workItem.areaPath)
+    const nextIterationPath = sanitizeText(workItem.iterationPath)
+
     setParentId(String(workItem.id))
+    setSelectedParentClassification({
+      areaPath: nextAreaPath || undefined,
+      iterationPath: nextIterationPath || undefined,
+    })
     setWorkItemResults([])
     setIsWorkItemLookupOpen(false)
     setIsParentLookupSelectionLocked(true)
+
+    if (nextAreaPath) {
+      setAreaPath(nextAreaPath)
+    }
+
+    if (nextIterationPath) {
+      setIterationPath(nextIterationPath)
+    }
   }
 
   return (
@@ -478,6 +497,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
               setIsParentLookupSelectionLocked(false)
               setAreaPath('')
               setIterationPath('')
+              setSelectedParentClassification(null)
               setAreaOptions([])
               setIterationOptions([])
 
@@ -570,6 +590,7 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
                 const nextParentId = event.target.value
 
                 setParentId(nextParentId)
+                setSelectedParentClassification(null)
                 setIsWorkItemLookupOpen(true)
                 setIsParentLookupSelectionLocked(false)
 
@@ -604,9 +625,16 @@ export function TaskCreatorPage({ onExitPatMode }: TaskCreatorPageProps) {
             checked={inheritParentClassification}
             disabled={isSending}
             onChange={(event) => {
-              setInheritParentClassification(event.target.checked)
+              const shouldInherit = event.target.checked
+
+              setInheritParentClassification(shouldInherit)
               setAreaOptions([])
               setIterationOptions([])
+
+              if (shouldInherit) {
+                setAreaPath(selectedParentClassification?.areaPath || '')
+                setIterationPath(selectedParentClassification?.iterationPath || '')
+              }
             }}
           />
           <span>Usar area e iteracion del work item padre</span>
